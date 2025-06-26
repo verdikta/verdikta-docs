@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  deploy-docs:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -41,12 +41,25 @@ jobs:
           git commit -m "Auto-update submodules"
           git push
 
-      - name: Trigger Vercel deployment
-        if: steps.changes.outputs.changed == 'true' || github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
         run: |
-          if [ -n "${{ secrets.VERCEL_DEPLOY_HOOK }}" ]; then
-            curl -X POST "${{ secrets.VERCEL_DEPLOY_HOOK }}"
-            echo "✅ Vercel deployment triggered"
-          else
-            echo "❌ VERCEL_DEPLOY_HOOK not configured, skipping deployment trigger"
-          fi 
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Build documentation
+        run: |
+          mkdocs build
+
+      - name: Deploy to Vercel
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          working-directory: ./site
+          vercel-args: '--prod' 
