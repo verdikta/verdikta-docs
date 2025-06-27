@@ -75,22 +75,16 @@ jobs:
             # Install dependencies in dispatcher directory
             npm install solidity-docgen solc@0.8.19 --save-dev
             
-            # Create basic docgen config
-            cat > .solidity-docgen.js << 'EOF'
-module.exports = {
-  sourcesDir: './reputationBasedAggregator/contracts',
-  outputDir: './docs/api/generated',
-  templates: './docs/templates',
-  pages: 'files',
-  exclude: ['test/**/*', 'mocks/**/*'],
-  solcSettings: {
-    optimizer: {
-      enabled: true,
-      runs: 200
-    }
-  }
-};
-EOF
+            # Create basic docgen config using echo
+            echo "module.exports = {" > .solidity-docgen.js
+            echo "  sourcesDir: './reputationBasedAggregator/contracts'," >> .solidity-docgen.js
+            echo "  outputDir: './docs/api/generated'," >> .solidity-docgen.js
+            echo "  pages: 'files'," >> .solidity-docgen.js
+            echo "  exclude: ['test/**/*', 'mocks/**/*']," >> .solidity-docgen.js
+            echo "  solcSettings: {" >> .solidity-docgen.js
+            echo "    optimizer: { enabled: true, runs: 200 }" >> .solidity-docgen.js
+            echo "  }" >> .solidity-docgen.js
+            echo "};" >> .solidity-docgen.js
             
             # Create API generated directory
             mkdir -p ./docs/api/generated
@@ -118,15 +112,13 @@ EOF
             # Install dependencies
             npm install solidity-docgen solc@0.8.19 --save-dev
             
-            # Create docgen config
-            cat > .solidity-docgen.js << 'EOF'
-module.exports = {
-  sourcesDir: './contracts',
-  outputDir: '../installer/docs/docs/api/generated',
-  pages: 'files',
-  exclude: ['test/**/*', 'mocks/**/*']
-};
-EOF
+            # Create docgen config using echo
+            echo "module.exports = {" > .solidity-docgen.js
+            echo "  sourcesDir: './contracts'," >> .solidity-docgen.js
+            echo "  outputDir: '../installer/docs/docs/api/generated'," >> .solidity-docgen.js
+            echo "  pages: 'files'," >> .solidity-docgen.js
+            echo "  exclude: ['test/**/*', 'mocks/**/*']" >> .solidity-docgen.js
+            echo "};" >> .solidity-docgen.js
             
             # Create output directory
             mkdir -p ../installer/docs/docs/api/generated
