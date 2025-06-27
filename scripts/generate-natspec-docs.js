@@ -337,10 +337,20 @@ class NatSpecExtractor {
   }
 
   /**
-   * Recursively find all Solidity files
+   * Recursively find only core Verdikta Solidity files (exclude dependencies)
    */
   findSolidityFiles(dirPath) {
     const files = [];
+    
+    // List of core Verdikta contracts we want to document
+    const coreContracts = [
+      'ReputationAggregator.sol',
+      'ReputationKeeper.sol', 
+      'ReputationSingleton.sol',
+      'SimpleContract.sol',
+      'ArbiterOperator.sol',
+      'IReputationKeeper.sol'
+    ];
     
     function traverse(currentPath) {
       const items = fs.readdirSync(currentPath);
@@ -349,9 +359,17 @@ class NatSpecExtractor {
         const fullPath = path.join(currentPath, item);
         const stat = fs.statSync(fullPath);
         
-        if (stat.isDirectory() && !item.includes('node_modules') && !item.includes('.git')) {
+        // Skip lib directories (Chainlink dependencies), node_modules, .git, and test directories
+        if (stat.isDirectory() && 
+            !item.includes('node_modules') && 
+            !item.includes('.git') &&
+            !item.includes('lib') &&
+            !item.includes('test')) {
           traverse(fullPath);
-        } else if (stat.isFile() && item.endsWith('.sol')) {
+        } else if (stat.isFile() && 
+                   item.endsWith('.sol') && 
+                   !item.endsWith('.t.sol') && // Skip test files
+                   coreContracts.includes(item)) {
           files.push(fullPath);
         }
       }
