@@ -141,4 +141,6 @@ nav:
   - Smart Contracts: '!include sources/dispatcher/mkdocs.yml'
   - Changelog:
     - changelog/index.md
-    - Release Notes: changelog/releases.md 
+    - Release Notes: changelog/releases.md
+  - Development:
+    - Documentation Guide: developer-documentation-guide.md 
