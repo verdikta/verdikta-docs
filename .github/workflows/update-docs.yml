@@ -46,10 +46,59 @@ jobs:
         with:
           python-version: '3.9'
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+
+      - name: Generate Smart Contract Documentation
+        run: |
+          # Install solidity-docgen globally
+          npm install -g solidity-docgen
+          
+          # Generate docs for dispatcher contracts
+          if [ -d "sources/dispatcher/reputationBasedAggregator/contracts" ]; then
+            echo "Generating dispatcher contract documentation..."
+            cd sources/dispatcher
+            
+            # Create docgen config if it doesn't exist
+            cat > docgen.json << 'EOF'
+          {
+            "outputDir": "./docs/api/generated",
+            "pages": "files",
+            "exclude": ["test", "mock"],
+            "sourcesDir": "./reputationBasedAggregator/contracts",
+            "templates": "./docs/templates"
+          }
+          EOF
+            
+            # Generate documentation
+            npx solidity-docgen --solc-module solc-0.8.19
+            cd ../..
+          fi
+          
+          # Generate docs for arbiter contracts if they exist
+          if [ -d "sources/arbiter/arbiter-operator/contracts" ]; then
+            echo "Generating arbiter contract documentation..."
+            cd sources/arbiter/arbiter-operator
+            
+            cat > docgen.json << 'EOF'
+          {
+            "outputDir": "../installer/docs/docs/api/generated",
+            "pages": "files",
+            "exclude": ["test", "mock"],
+            "sourcesDir": "./contracts"
+          }
+          EOF
+            
+            npx solidity-docgen --solc-module solc-0.8.19
+            cd ../../..
+          fi
 
       - name: Build documentation
         run: |
