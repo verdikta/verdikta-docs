@@ -66,8 +66,12 @@ jobs:
           echo "=== Contract Directory Discovery ==="
           echo "Dispatcher contracts:"
           find sources/dispatcher -name "*.sol" -type f 2>/dev/null || echo "No .sol files found in dispatcher"
+          echo "Dispatcher Hardhat configs:"
+          find sources/dispatcher -name "hardhat.config.*" -type f 2>/dev/null || echo "No Hardhat configs found in dispatcher"
           echo "Arbiter contracts:"
           find sources/arbiter -name "*.sol" -type f 2>/dev/null || echo "No .sol files found in arbiter"
+          echo "Arbiter Hardhat configs:"
+          find sources/arbiter -name "hardhat.config.*" -type f 2>/dev/null || echo "No Hardhat configs found in arbiter"
           echo "=================================="
           
           # Generate docs for dispatcher contracts
@@ -80,19 +84,20 @@ jobs:
               npm init -y
             fi
             
-            # Install dependencies in dispatcher directory
-            npm install solidity-docgen solc@0.8.19 --save-dev
+            # Install Hardhat documentation plugins
+            npm install hardhat @primitivefi/hardhat-dodoc hardhat-docgen --save-dev
             
-            # Create basic docgen config using echo
-            echo "module.exports = {" > .solidity-docgen.js
-            echo "  sourcesDir: './reputationBasedAggregator/contracts'," >> .solidity-docgen.js
-            echo "  outputDir: './docs/api/generated'," >> .solidity-docgen.js
-            echo "  pages: 'files'," >> .solidity-docgen.js
-            echo "  exclude: ['test/**/*', 'mocks/**/*']," >> .solidity-docgen.js
-            echo "  solcSettings: {" >> .solidity-docgen.js
-            echo "    optimizer: { enabled: true, runs: 200 }" >> .solidity-docgen.js
-            echo "  }" >> .solidity-docgen.js
-            echo "};" >> .solidity-docgen.js
+            # Check if this is a Hardhat project
+            if [ -f "hardhat.config.js" ] || [ -f "hardhat.config.ts" ]; then
+              echo "Found Hardhat project, using Hardhat documentation tools..."
+              
+              # Try Hardhat-based documentation generation
+              npx hardhat docgen 2>/dev/null || \
+              npx hardhat dodoc 2>/dev/null || \
+              echo "Hardhat documentation plugins not configured, falling back to simple parsing"
+            else
+              echo "Not a Hardhat project, using simple documentation generation..."
+            fi
             
             # Create API generated directory
             mkdir -p ./docs/api/generated
@@ -101,14 +106,7 @@ jobs:
             if [ -d "./reputationBasedAggregator/contracts" ] && [ -n "$(find ./reputationBasedAggregator/contracts -name '*.sol' 2>/dev/null)" ]; then
               echo "Found Solidity contracts, generating documentation..."
               
-              # Try multiple approaches for documentation generation
-              echo "Attempting solidity-docgen..."
-              
-              # Method 1: Direct node execution
-              node_modules/.bin/solidity-docgen 2>/dev/null || \
-              # Method 2: npx with explicit package
-              npx --yes @primitivefi/hardhat-dodoc 2>/dev/null || \
-              # Method 3: Simple contract listing
+              # If Hardhat tools didn't work, create simple contract listing
               {
                 echo "Creating simple contract documentation..."
                 mkdir -p ./docs/api/generated
@@ -201,16 +199,20 @@ jobs:
               npm init -y
             fi
             
-            # Install dependencies
-            npm install solidity-docgen solc@0.8.19 --save-dev
+            # Install Hardhat documentation plugins  
+            npm install hardhat @primitivefi/hardhat-dodoc hardhat-docgen --save-dev
             
-            # Create docgen config using echo
-            echo "module.exports = {" > .solidity-docgen.js
-            echo "  sourcesDir: './contracts'," >> .solidity-docgen.js
-            echo "  outputDir: '../installer/docs/docs/api/generated'," >> .solidity-docgen.js
-            echo "  pages: 'files'," >> .solidity-docgen.js
-            echo "  exclude: ['test/**/*', 'mocks/**/*']" >> .solidity-docgen.js
-            echo "};" >> .solidity-docgen.js
+            # Check if this is a Hardhat project
+            if [ -f "hardhat.config.js" ] || [ -f "hardhat.config.ts" ]; then
+              echo "Found Hardhat project, using Hardhat documentation tools..."
+              
+              # Try Hardhat-based documentation generation
+              npx hardhat docgen 2>/dev/null || \
+              npx hardhat dodoc 2>/dev/null || \
+              echo "Hardhat documentation plugins not configured, falling back to simple parsing"
+            else
+              echo "Not a Hardhat project, using simple documentation generation..."
+            fi
             
             # Create output directory
             mkdir -p ../installer/docs/docs/api/generated
