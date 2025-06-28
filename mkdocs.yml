@@ -138,6 +138,7 @@ nav:
     - Whitepaper: overview/whitepaper.md
   - Node Operators: '!include sources/arbiter/installer/docs/mkdocs.yml'
   - Developers: '!include sources/apps/docs/mkdocs.yml'
+  - Common Library: '!include sources/common/mkdocs.yml'
   - Smart Contracts: '!include sources/dispatcher/mkdocs.yml'
   - Changelog:
     - changelog/index.md
