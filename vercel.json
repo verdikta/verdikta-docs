@@ -1,29 +1,15 @@
 {
   "version": 2,
-  "name": "verdikta-docs",
+  "public": true,
   "github": {
     "silent": true
   },
-  "public": true,
   "buildCommand": "mkdocs build",
   "outputDirectory": "site",
   "installCommand": "pip install -r requirements.txt",
   "devCommand": "mkdocs serve",
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "/",
-      "status": 404,
-      "continue": true
-    },
-    {
-      "handle": "filesystem"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/404.html"
-    }
-  ],
+  "cleanUrls": true,
+  "trailingSlash": false,
   "headers": [
     {
       "source": "/(.*)",
@@ -39,10 +25,6 @@
         {
           "key": "X-XSS-Protection",
           "value": "1; mode=block"
-        },
-        {
-          "key": "Referrer-Policy",
-          "value": "strict-origin-when-cross-origin"
         }
       ]
     },
@@ -59,8 +41,7 @@
   "redirects": [
     {
       "source": "/index.html",
-      "destination": "/",
-      "permanent": true
+      "destination": "/"
     }
   ]
 } 
