@@ -508,7 +508,7 @@ Before the monorepo can work, each source repository needs proper `docs/` struct
     **Critical**: Every source repo must have a consistent, flattened `/docs/` structure (no nested docs/docs folders). The monorepo plugin requires uniform directory patterns across all submodules to function properly. Store images and diagrams in `/docs/images/` or `/docs/_assets/` within each repository.
 
 !!! warning "Monorepo Plugin Requirements"
-    
+
     The mkdocs-monorepo-plugin expects consistent directory structures. If some repositories have nested `docs/docs/` while others have flat `docs/`, the plugin will fail to discover content. All repositories must be flattened to the same pattern.
 
 #### 4.1 Verdikta Arbiter Repository (Flattening Required)

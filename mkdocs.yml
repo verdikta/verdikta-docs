@@ -1,7 +1,10 @@
-site_name: Verdikta Documentation
-site_description: Complete documentation for the Verdikta ecosystem
+site_name: Verdikta Dispatcher Smart Contracts
+site_description: Smart contract documentation for the Verdikta Dispatcher ecosystem
 site_author: Verdikta Team
 site_url: https://docs.verdikta.com
+
+# Docs directory (set to current directory for consistency)
+docs_dir: .
 
 # Repository
 repo_name: verdikta/verdikta-docs
