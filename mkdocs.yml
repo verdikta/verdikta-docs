@@ -1,10 +1,10 @@
-site_name: Verdikta Dispatcher Smart Contracts
-site_description: Smart contract documentation for the Verdikta Dispatcher ecosystem
+site_name: Verdikta Documentation
+site_description: Complete documentation for the Verdikta ecosystem
 site_author: Verdikta Team
-site_url: https://docs.verdikta.com
+site_url: https://docs.verdikta.org
 
-# Docs directory (set to current directory for consistency)
-docs_dir: .
+# Docs directory for main content
+docs_dir: docs
 
 # Repository
 repo_name: verdikta/verdikta-docs
@@ -135,6 +135,4 @@ nav:
   - Smart Contracts: '!include sources/dispatcher/mkdocs.yml'
   - Changelog:
     - changelog/index.md
-    - Release Notes: changelog/releases.md
-  - Development:
-    - Documentation Guide: developer-documentation-guide.md 
+    - Release Notes: changelog/releases.md 

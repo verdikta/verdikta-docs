@@ -1,5 +1,5 @@
 mkdocs-material==9.5.9
-mkdocs-monorepo-plugin==1.0.4
+mkdocs-monorepo-plugin==1.1.2
 mike==2.0.0
 pymdown-extensions==10.7
 mkdocs-mermaid2-plugin==1.1.1
