@@ -1,6 +1,6 @@
 {
-  "buildCommand": "pip install -r requirements.txt && mkdocs build",
-  "installCommand": "python3 -m pip install --upgrade pip",
-  "outputDirectory": "site",
+  "buildCommand": null,
+  "installCommand": null,
+  "outputDirectory": ".",
   "framework": null
 } 

@@ -40,14 +40,62 @@ jobs:
           git add .
           git commit -m "Auto-update submodules"
           git push
-        
-      - name: Summary
-        if: steps.changes.outputs.changed == 'true'
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
         run: |
-          echo "✅ Submodules updated and pushed to main branch"
-          echo "📦 Vercel will automatically deploy the changes"
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Generate Smart Contract Documentation
+        run: |
+          echo "=== Smart Contract NatSpec Documentation Generation ==="
           
-      - name: No changes
-        if: steps.changes.outputs.changed == 'false'
+          # Make the NatSpec generator script executable
+          chmod +x scripts/generate-natspec-docs.js
+          
+          # Generate docs for dispatcher contracts
+          if [ -d "sources/dispatcher" ]; then
+            echo "📄 Generating Dispatcher Contract Documentation..."
+            node scripts/generate-natspec-docs.js \
+              "sources/dispatcher" \
+              "sources/dispatcher/docs/api/generated/index.md" \
+              "Verdikta Dispatcher Smart Contracts"
+          fi
+          
+          # Generate docs for arbiter contracts if they exist
+          if [ -d "sources/arbiter/arbiter-operator/contracts" ]; then
+            echo "📄 Generating Arbiter Contract Documentation..."
+            mkdir -p "sources/arbiter/installer/docs/docs/api/generated"
+            node scripts/generate-natspec-docs.js \
+              "sources/arbiter/arbiter-operator/contracts" \
+              "sources/arbiter/installer/docs/docs/api/generated/index.md" \
+              "Verdikta Arbiter Smart Contracts"
+          fi
+          
+          echo "✅ Smart Contract Documentation Generation Complete"
+
+      - name: Build documentation
         run: |
-          echo "ℹ️ No submodule updates detected" 
+          mkdocs build
+
+      - name: Verify build output
+        run: |
+          ls -la
+          ls -la site/ || echo "site directory not found"
+
+      - name: Deploy to Vercel
+        run: |
+          npx vercel deploy --prod --token ${{ secrets.VERCEL_TOKEN }} --yes ./site
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }} 
