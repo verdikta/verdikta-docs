@@ -35,8 +35,8 @@ jobs:
       - name: Commit and push changes
         if: steps.changes.outputs.changed == 'true'
         run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
+          git config --local user.email "nigelon11@proton.me"
+          git config --local user.name "Verdikta Docs Bot"
           git add .
           git commit -m "Auto-update submodules"
           git push
