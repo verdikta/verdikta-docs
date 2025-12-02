@@ -129,6 +129,7 @@ nav:
     - overview/index.md
     - Architecture: overview/architecture.md
     - Whitepaper: overview/whitepaper.md
+  - Contributing: contributing.md
   - Node Operators: '!include sources/arbiter/installer/docs/mkdocs.yml'
   - Developers: '!include sources/apps/docs/mkdocs.yml'
   - Common Library: '!include sources/common/mkdocs.yml'
