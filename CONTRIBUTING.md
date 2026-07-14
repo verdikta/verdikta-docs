@@ -2,6 +2,11 @@
 
 This guide explains how to add and maintain documentation for the Verdikta ecosystem hosted at [docs.verdikta.org](https://docs.verdikta.org).
 
+Before creating or implementing a documentation issue, read the canonical
+[Verdikta backlog and issue workflow](docs/backlog-workflow.md). It defines
+repository ownership, issue readiness, Project fields, native initiative
+relationships, and the execution states used across the organization.
+
 ## Architecture Overview
 
 ```
@@ -189,4 +194,3 @@ git push
 ### Need immediate update?
 - Push directly to verdikta-docs main branch, or
 - Manually trigger the GitHub Actions workflow
-
