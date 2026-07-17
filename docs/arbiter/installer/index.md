@@ -49,5 +49,5 @@ If you need help during installation:
 
 ---
 
-!!! info "Beta Notice"
-    Verdikta is currently in beta. Features and procedures may change before mainnet launch. 
+!!! info "Network Availability"
+    Verdikta is live on Base Mainnet and Base Sepolia. You can run an arbiter node on either network. 

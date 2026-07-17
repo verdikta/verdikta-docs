@@ -82,10 +82,10 @@ Choose your path based on your role:
 
 | Component | Status | Network |
 |-----------|--------|---------|
-| Arbiter Nodes | <span class="status-badge beta">Beta</span> | Base Sepolia |
-| Dispatcher Contracts | <span class="status-badge beta">Beta</span> | Base Sepolia |
-| Client SDKs | <span class="status-badge alpha">Alpha</span> | - |
-| Mainnet Launch | <span class="status-badge planned">Planned</span> | Base Mainnet |
+| Arbiter Nodes | <span class="status-badge stable">Live</span> | Base Mainnet & Base Sepolia |
+| Dispatcher Contracts | <span class="status-badge stable">Live</span> | Base Mainnet & Base Sepolia |
+| Client SDKs | <span class="status-badge beta">Beta</span> | - |
+| Bounties | <span class="status-badge stable">Live</span> | Base Mainnet & Base Sepolia |
 
 ## Support & Community
 
@@ -96,5 +96,5 @@ Choose your path based on your role:
 
 ---
 
-!!! info "Beta Notice"
-    Verdikta is currently in beta testing on Base Sepolia testnet. Features and APIs may change before mainnet launch. 
+!!! info "Network Availability"
+    Verdikta is live on Base Mainnet, with Base Sepolia available for testing. See live network metrics at [bounties.verdikta.org/analytics](https://bounties.verdikta.org/analytics). 

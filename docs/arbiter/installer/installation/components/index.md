@@ -22,7 +22,7 @@
 
 ### 4. Smart Contracts
 - **Purpose**: On-chain arbitration logic
-- **Network**: Base Sepolia (testnet)
+- **Network**: Base Mainnet (production) or Base Sepolia (testnet)
 - **Features**: Reputation management, dispute handling
 
 ## Component Interaction

@@ -37,32 +37,24 @@ This page tracks all notable changes to the Verdikta ecosystem, including update
 | v0.2.0 | Nov 2024 | <span class="status-badge beta">Beta</span> | Initial beta release |
 | v0.1.0 | Oct 2024 | <span class="status-badge alpha">Alpha</span> | Internal testing |
 
-## Roadmap
+## Milestones
+
+### ✅ Mainnet Launch (Complete)
+- **Live**: Production deployment on Base Mainnet
+- **Live**: Arbiter node network on Base Mainnet and Base Sepolia
+- **Live**: Bounties application on mainnet and testnet ([metrics](https://bounties.verdikta.org/analytics))
+- **Beta**: Client SDKs
 
 ### 🔮 Coming Soon
 
-#### Q1 2025: Enhanced Features
-- **New**: Advanced AI model integration (GPT-4 Turbo, Claude-3.5)
-- **New**: Mobile SDK for iOS and Android
-- **New**: Multi-language support for global users
-- **Improved**: Faster dispute resolution (target: <5 minutes)
-- **Improved**: Lower fees through optimization
-
-#### Q2 2025: Mainnet Launch
-- **New**: Production deployment on Base Mainnet
-- **New**: Verdikta Token (VDK) launch
-- **New**: Staking and governance system
-- **New**: Community governance portal
-- **New**: Partnership integrations
-
-#### Q3 2025: Ecosystem Growth
-- **New**: Ethereum Mainnet support
-- **New**: Polygon network integration
+#### Ecosystem Growth
 - **New**: Enterprise API features
 - **New**: Bulk dispute processing
+- **New**: Partnership integrations
 - **Improved**: Advanced analytics and reporting
 
-#### Q4 2025: Advanced Features
+#### Advanced Features
+- **New**: Multi-chain deployment
 - **New**: Cross-chain arbitration
 - **New**: Specialized dispute categories
 - **New**: AI model marketplace

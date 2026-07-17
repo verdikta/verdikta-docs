@@ -35,7 +35,7 @@
 
 ### Wallet Setup
 - Private key with sufficient funds
-- Base Sepolia ETH for gas fees
+- ETH for gas fees on your target network (Base Mainnet or Base Sepolia)
 - LINK tokens for oracle operations
 
 ## Network Configuration

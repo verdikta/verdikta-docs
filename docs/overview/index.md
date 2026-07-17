@@ -13,9 +13,9 @@ Verdikta is built as a modular ecosystem with several key components working tog
 
 ### Supported Networks
 
-- **Base Sepolia** (Testnet) - Currently active for testing
-- **Ethereum Mainnet** (Coming Soon) - Planned deployment
-- **Polygon** (Planned) - Future expansion
+- **Base Mainnet** - Live in production
+- **Base Sepolia** (Testnet) - Live for testing and development
+- **Additional networks** - Under evaluation for future expansion
 
 ## How It Works
 

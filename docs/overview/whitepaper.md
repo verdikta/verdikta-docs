@@ -147,31 +147,25 @@ Token holders will vote on:
 
 ## Roadmap
 
-### 2024 Q1: Beta Launch ✅
+### Beta Launch ✅
 - [x] Base Sepolia testnet deployment
 - [x] Initial arbiter node network
 - [x] Basic dispute resolution functionality
 - [x] Community testing program
 
-### 2024 Q2: Enhanced Features
-- [ ] Multi-chain deployment (Ethereum, Polygon)
+### Mainnet Launch ✅
+- [x] Production deployment on Base Mainnet
+- [x] Arbiter node network live on mainnet
+- [x] Bounties application live on mainnet and testnet
+
+### Ecosystem Growth (In Progress)
+- [x] Client SDKs (Beta)
 - [ ] Advanced AI model integration
-- [ ] Mobile SDK release
 - [ ] Partnership integrations
-
-### 2024 Q3: Mainnet Launch
-- [ ] Production deployment on Base Mainnet
-- [ ] Token generation event
-- [ ] Liquidity provision
-- [ ] Marketing campaign
-
-### 2024 Q4: Ecosystem Growth
-- [ ] Layer 2 scaling solutions
-- [ ] International expansion
 - [ ] Enterprise partnerships
-- [ ] Full DAO transition
 
-### 2025: Advanced Features
+### Advanced Features (Planned)
+- [ ] Multi-chain deployment
 - [ ] Cross-chain arbitration
 - [ ] Specialized dispute types
 - [ ] AI model marketplace

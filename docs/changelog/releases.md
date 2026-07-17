@@ -178,46 +178,19 @@ Detailed release notes for all Verdikta ecosystem components.
 
 ---
 
-## Upcoming Releases
+## Mainnet Launch
 
-### v0.4.0 - Enhanced AI Integration
-*Planned: February 2025*
+Verdikta is **live on Base Mainnet**. Dispatcher contracts and the arbiter node
+network operate in production on Base Mainnet and Base Sepolia, and the
+Bounties application is live on both networks
+([live metrics](https://bounties.verdikta.org/analytics)).
 
-#### Planned Features
-- **GPT-4 Turbo**: Integration with latest OpenAI models
-- **Claude-3.5 Sonnet**: Support for Anthropic's newest model
-- **Local Model Support**: Enhanced support for self-hosted AI models
-- **Custom Model Training**: Beta support for domain-specific model fine-tuning
+## Upcoming Work
 
-### v0.5.0 - Mobile SDK
-*Planned: March 2025*
-
-#### Planned Features
-- **iOS SDK**: Native iOS integration library
-- **Android SDK**: Native Android integration library
-- **React Native**: React Native wrapper for cross-platform development
-- **Flutter Plugin**: Flutter integration for mobile developers
-
-### v1.0.0 - Mainnet Launch
-*Planned: June 2025*
-
-#### Planned Features
-- **Base Mainnet**: Production deployment on Base L2
-- **Token Launch**: Verdikta Token (VDK) generation event
-- **Governance System**: On-chain governance for protocol parameters
-- **Staking Rewards**: Live staking and reward distribution
-- **Enterprise Features**: Advanced features for business users
-
----
-
-## Release Schedule
-
-| Quarter | Focus | Major Features |
-|---------|-------|----------------|
-| Q1 2025 | Developer Experience | Enhanced APIs, SDKs, tooling |
-| Q2 2025 | Mainnet Launch | Production deployment, token launch |
-| Q3 2025 | Ecosystem Growth | Multi-chain, partnerships, scaling |
-| Q4 2025 | Advanced Features | Cross-chain, specialized disputes |
+- **Enhanced AI Integration**: Ongoing support for the latest frontier and self-hosted models
+- **Client SDKs**: Currently in beta; continued hardening and expanded platform coverage
+- **Ecosystem Growth**: Partnerships, enterprise features, and scaling
+- **Advanced Features**: Multi-chain support, cross-chain arbitration, specialized dispute types
 
 ## Support
 
