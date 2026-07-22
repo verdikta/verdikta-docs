@@ -2,6 +2,14 @@
 
 This repository hosts the unified documentation site for the Verdikta ecosystem at [docs.verdikta.org](https://docs.verdikta.org).
 
+## Backlog and contribution workflow
+
+Verdikta coordinates work across repositories through the
+[Verdikta Master Backlog](https://github.com/orgs/verdikta/projects/1).
+Humans and automated agents contributing here must read [AGENTS.md](AGENTS.md)
+and the canonical [backlog and issue workflow](docs/backlog-workflow.md) before
+creating, selecting, or changing work items.
+
 ## 🏗️ Architecture
 
 ```

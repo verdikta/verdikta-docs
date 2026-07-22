@@ -134,11 +134,13 @@ nav:
     - overview/index.md
     - Architecture: overview/architecture.md
     - Whitepaper: overview/whitepaper.md
-  - Contributing: contributing.md
+  - Contributing:
+    - Documentation: contributing.md
+    - Backlog and issue workflow: backlog-workflow.md
   - Node Operators: '!include sources/arbiter/installer/docs/mkdocs.yml'
   - Developers: '!include sources/apps/docs/mkdocs.yml'
   - Common Library: '!include sources/common/mkdocs.yml'
   - Smart Contracts: '!include sources/dispatcher/mkdocs.yml'
   - Changelog:
     - changelog/index.md
-    - Release Notes: changelog/releases.md 
+    - Release Notes: changelog/releases.md
