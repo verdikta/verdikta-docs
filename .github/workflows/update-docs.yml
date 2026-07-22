@@ -20,7 +20,12 @@ jobs:
 
       - name: Update submodules
         run: |
-          git pull --rebase
+          # --no-recurse-submodules: on-demand submodule fetching tries to fetch
+          # every historical submodule commit referenced in the superproject,
+          # which fails if any of those commits were pruned from the submodule
+          # remote ("upload-pack: not our ref"). The submodule update below
+          # handles bringing submodules to their latest branch tips.
+          git pull --rebase --no-recurse-submodules
           git submodule update --remote --recursive
           
       - name: Check for changes
