@@ -75,6 +75,16 @@ See **[CONTRIBUTING.md](CONTRIBUTING.md)** for detailed instructions on:
 | **Overview** | `docs/overview/` | Architecture, whitepaper |
 | **Changelog** | `docs/changelog/` | Release notes |
 
+## ✅ Checking the docs against the deployed contracts
+
+The user guide and the whitepaper state values that live in the contracts on Base mainnet (how many arbiters are polled, the bonus, the timeout, fees, thresholds, how many arbiters and operators are registered). The contracts' owner can change these values, and the documents then become wrong without anyone editing them. `scripts/live-facts.json` lists each such statement with the contract call it is read from, and this command compares the three:
+
+```bash
+node scripts/check-live-facts.mjs
+```
+
+It needs Node 18 or later, only reads, and exits with code 1 when a value on chain differs from the one the documents were written for (`CHANGED`) or a document no longer states a value (`NOT FOUND`). Run it before a release and whenever contract settings change. To check a copy of the user guide that is not merged yet, add `--user-guide <path to user-guide.md>`. After a deliberate change, correct the documents first, then `expected` and the patterns in `scripts/live-facts.json`.
+
 ## 🔗 Related Repositories
 
 - [verdikta-arbiter](https://github.com/verdikta/verdikta-arbiter) - Arbiter node software
