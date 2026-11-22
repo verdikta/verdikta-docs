@@ -2,5 +2,12 @@
   "buildCommand": null,
   "installCommand": null,
   "outputDirectory": ".",
-  "framework": null
+  "framework": null,
+  "redirects": [
+    {
+      "source": "/whitepaper",
+      "destination": "/overview/whitepaper/",
+      "permanent": false
+    }
+  ]
 }
