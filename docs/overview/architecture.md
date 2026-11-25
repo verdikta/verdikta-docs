@@ -115,7 +115,8 @@ function getArbiter(bytes32 key) view returns (ArbiterView)
 
 A request is checked per request and reverts with `BadJury` unless K >= M >= N >= P >= 1, N <= 40,
 P >= 2 unless N = 1, K <= `maxJury()` (default 50) and the keeper's `shortlistSize()` (60), and
-`tPlus()` (155 s) < timeout <= `maxTimeout()` (3,600 s).
+`tPlus()` (155 s) < timeout <= `maxTimeout()` (3,600 s), and timeout <= one day (86,400 s)
+whatever `maxTimeout()` says. A round keeps the T+ of its request for its commit window.
 
 ### 2. Arbiter Oracle Network
 

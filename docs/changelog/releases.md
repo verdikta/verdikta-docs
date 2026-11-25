@@ -13,7 +13,8 @@ repository's `reputationBasedAggregator/MIGRATION.md` lists what each consumer m
 - `requestAIEvaluationWithApproval(cids, addendumText, alpha, maxFee, minFee, estimatedBaseCost,
   maxFeeBasedScalingFactor, requestedClass, withBeacons, jury)`, with `jury = (K, M, N, P, timeout)`. The request
   reverts with `BadJury` unless K >= M >= N >= P >= 1, N <= 40, P >= 2 unless N = 1, K <= `maxJury()` (50) and the
-  keeper's `shortlistSize()` (60), and `tPlus()` (155 s) < timeout <= `maxTimeout()` (3,600 s).
+  keeper's `shortlistSize()` (60), and `tPlus()` (155 s) < timeout <= `maxTimeout()` (3,600 s), with
+  the timeout at most one day (86,400 s) whatever `maxTimeout()` says.
 - The escrow is `maxTotalFee(maxFee, minFee, withBeacons, K, P)` in ETH. The aggregator has no `K()`, `M()`, `N()`,
   `P()` or `responseTimeoutSeconds()`; `getJury(aggId)` returns a round's jury.
 - The round moves on through permissionless calls: `drawJury` (from block B+2; twice with beacons), `closeCommits`
