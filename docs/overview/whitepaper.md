@@ -72,45 +72,49 @@ graph TB
 
 ### Consensus Mechanism
 
-Verdikta employs a novel "AI Jury" system where multiple independent AI models analyze each dispute:
+Verdikta employs a novel "AI Jury" system where multiple independent AI arbiters, each running one or more AI models, analyze each dispute:
 
 1. **Evidence Processing**: All evidence is standardized and prepared for analysis
-2. **Multi-Model Analysis**: 3-7 different AI models independently evaluate the case
-3. **Weighted Voting**: Models' decisions are weighted based on their historical accuracy
-4. **Consensus Building**: Final decision requires supermajority consensus
+2. **Jury Draw**: Each request names its jury: K arbiters drawn, M promoted to reveal, N reveals counted, P in the consensus cluster, and a timeout. The jury is drawn after the request, weighted by reputation and fee, from a seed no one knows when the request is sent (a later block hash, optionally mixed with values from jury beacons)
+3. **Commit–Reveal**: Each drawn arbiter evaluates the case independently and commits to a hash of its answer, bound to the round. M of the commits are then drawn at random to reveal
+4. **Consensus Building**: Once N reveals are in, the final decision is the mean of the P closest answers (the cluster), so outliers do not move it
 5. **Justification Generation**: Detailed reasoning is provided for transparency
 
 ### Security Features
 
 - **Cryptographic Evidence**: All evidence is cryptographically verified
-- **Multi-Signature Validation**: Decisions require multiple arbiter signatures
-- **Stake-Based Participation**: Arbiters must stake tokens to participate
-- **Reputation System**: Poor decisions reduce future earning potential
+- **Commitments Bound to the Round**: Each answer is sealed by a hash of the round, the arbiter and a fresh 128-bit salt before any answer is revealed
+- **Stake-Based Participation**: Arbiters must stake tokens to participate, and the stake stays bonded for an unbonding period after an arbiter exits
+- **Liveness Checks**: Arbiters answer on-chain health calls from a hash chain; an arbiter that does not answer is frozen and not selected
+- **Reputation System**: Answers far from the consensus and missed reveals reduce future earning potential, and repeated failures block or ban an arbiter
 - **Appeal Mechanism**: Disputed decisions can be escalated
 
 ## Economic Model
 
 ### Token Utility
 
-The Verdikta Token (VDK) serves multiple functions:
+The Verdikta Token (VDKA) serves multiple functions:
 
-1. **Payment**: Users pay fees in VDK tokens
-2. **Staking**: Arbiters stake VDK to participate in the network
-3. **Rewards**: Successful arbiters earn VDK rewards
-4. **Governance**: Token holders vote on protocol parameters
+1. **Staking**: Arbiters stake VDKA to participate in the network (100 VDKA per arbiter by default)
+2. **Security**: The stake can be burned for repeated failures (the protocol's burns are off by default)
+3. **Governance**: Token holders vote on protocol parameters
+
+Requesters pay the arbiters' fees in ETH, escrowed with each request.
 
 ### Fee Structure
 
-| Dispute Value | Fee Rate | Minimum Fee |
-|---------------|----------|-------------|
-| $0 - $100 | 5% | $1 |
-| $100 - $1,000 | 3% | $5 |
-| $1,000 - $10,000 | 2% | $30 |
-| $10,000+ | 1% | $200 |
+Fees are set per request, not by dispute value:
+
+- Each arbiter posts its own fee. The requester sets a fee ceiling, which decides which arbiters are eligible, and may set a fee floor: every juror is then paid at least the floor.
+- Every drawn juror is paid its fee; each arbiter in the consensus cluster earns a bonus of 3 times its fee.
+- Whoever draws the jury, and whoever promotes the reveals, earns a small reward, so no outside service is needed to move a round on.
+- The requester escrows the most a round can cost, and unspent fees are returned, except where a refund would let a requester re-roll a jury it did not like.
+
+The cost of a decision therefore follows the jury the application asks for: a small jury for small stakes, a large one for high-value decisions.
 
 ### Incentive Alignment
 
-- **Arbiters**: Earn fees for accurate decisions, lose stake for poor ones
+- **Arbiters**: Earn fees for every round they are drawn for and a bonus for answers in the consensus; lose reputation, and selection, for poor ones
 - **Users**: Pay lower fees than traditional systems
 - **Developers**: Earn revenue sharing for building applications
 - **Token Holders**: Benefit from network growth and fee collection

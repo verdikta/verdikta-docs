@@ -38,11 +38,11 @@ sequenceDiagram
 
 ### Step-by-Step Process
 
-1. **Dispute Creation**: Users submit disputes through smart contracts with evidence stored on IPFS
-2. **Oracle Assignment**: System assigns qualified arbiters based on reputation and availability
+1. **Dispute Creation**: Users submit disputes through smart contracts with evidence stored on IPFS. In v2 the request also carries its jury (K drawn, M promoted, N counted, P clustered, and a timeout) and escrows the fees in ETH
+2. **Oracle Assignment**: From two blocks after the request, anyone calls `drawJury`. The keeper draws K arbiters, weighted by reputation and fee, from the arbiters eligible at the request block, using a seed from the next block's hash (optionally mixed with jury beacons), so nobody can predict or re-roll the jury when the request is sent
 3. **AI Processing**: Advanced AI models analyze evidence and arguments from multiple perspectives
-4. **Decision Making**: Consensus mechanism ensures fair outcomes through weighted voting
-5. **Settlement**: Results are recorded on-chain and trigger automatic execution
+4. **Decision Making**: Each arbiter commits to a hash of its answer, bound to the round. Once enough commits are in, M of them are drawn at random to reveal; the N-th counted reveal finalizes the round, and the result is the mean of the P closest reveals (the cluster)
+5. **Settlement**: Results are recorded on-chain and trigger automatic execution. After the round's deadline, settlement updates every juror's reputation in one keeper call
 
 ## Key Innovations
 
@@ -52,9 +52,9 @@ sequenceDiagram
 - Bias reduction through diverse perspectives
 
 ### Reputation-Based Selection
-- Arbiters build reputation over time based on decision quality
-- Automatic selection of most qualified arbiters for each dispute type
-- Economic incentives align with fair decision-making
+- Arbiters build two scores over time: quality (closeness to the round's median) and timeliness (delivering promoted reveals, and committing)
+- Selection is weighted by those scores and by fee, from the arbiters registered in the requested class, staked, and answering their health calls
+- Economic incentives align with fair decision-making: clustered arbiters earn a bonus, and a score that reaches 0 blocks the arbiter
 
 ### Blockchain Integration
 - All decisions permanently recorded on-chain
@@ -112,7 +112,8 @@ sequenceDiagram
 - **Cost**: ~$1-5 per dispute (vs $100-1000 traditional)
 
 ### Security Features
-- **Multi-signature validation**: Requires consensus from multiple arbiters
+- **Commit–reveal**: Each arbiter commits `keccak256(abi.encode(aggId, operator, response, salt))` before any answer is revealed, so no arbiter can copy another or change its answer
+- **Unpredictable juries**: The jury is drawn after the request from a block hash, and the reveals from the commits by a later block hash
 - **Cryptographic proofs**: All evidence cryptographically verified
 - **Immutable records**: Blockchain ensures tamper-proof decisions
 - **Access controls**: Role-based permissions and authentication

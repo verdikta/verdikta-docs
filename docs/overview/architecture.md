@@ -63,33 +63,59 @@ graph TB
 
 ### 1. Verdikta Dispatcher (Smart Contracts)
 
-The core blockchain component that manages the entire dispute resolution lifecycle.
+The core blockchain component that manages the entire dispute resolution lifecycle. This section describes
+v2, a breaking redeploy of v1 that is not deployed yet: its addresses will be published at the v2
+deployment. The contract pages under Smart Contracts give the full interfaces.
 
 #### Key Contracts
 
-- **`VerdiktaDispatcher.sol`**: Main orchestration contract
-- **`ReputationManager.sol`**: Handles arbiter reputation and scoring
-- **`TokenManager.sol`**: Manages staking, rewards, and payments
-- **`DisputeFactory.sol`**: Creates and manages individual disputes
+- **`ReputationAggregator.sol`**: Takes requests and escrows their fees in ETH, draws each request's jury
+  through the keeper, runs the commit and reveal phases over Chainlink operator requests, clusters the
+  reveals, pays arbiters, and settles each round's reputation outcomes with the keeper. One deployment
+  serves every jury size: each request carries its own jury.
+- **`ReputationKeeper.sol`**: The arbiter registry. Stake (wVDKA), unbonding, the two reputation scores
+  (quality and timeliness), blocks and bans, hash-chain health calls and the freeze, and
+  reputation-weighted selection read as of the request block.
+- **`JuryBeacons.sol`**: Optional per request. Picks beacon arbiters through the keeper and mixes their
+  hash-chain values into the jury seed.
+- **`ScoringLib.sol`**, **`AggregatorLib.sol`**: External libraries for clustering, quality classes and the
+  promotion draw, and for payloads, the CID/salt parser and jury checks.
+- **`ArbiterOperator.sol`**: Each arbiter's Chainlink operator. It accepts requests only from contracts the
+  keeper approves (`isContractApproved`).
 
-#### Dispatcher Functions
+#### Aggregator and Keeper Functions
 
 ```solidity
-// Core dispute management
-function createDispute(bytes32 evidenceHash, uint256 stake) external
-function assignArbiters(uint256 disputeId) external
-function submitDecision(uint256 disputeId, Decision decision) external
-function executeResolution(uint256 disputeId) external
+// ReputationAggregator: a round
+struct Jury { uint8 K; uint8 M; uint8 N; uint8 P; uint40 timeout; } // drawn, promoted, counted, clustered; seconds from the draw
+function maxTotalFee(uint256 maxFee, uint256 minFee, bool withBeacons, uint8 K, uint8 P) view returns (uint256)
+function requestAIEvaluationWithApproval(string[] cids, string addendumText, uint256 alpha, uint256 maxFee,
+    uint256 minFee, uint256 estimatedBaseCost, uint256 maxFeeBasedScalingFactor, uint64 requestedClass,
+    bool withBeacons, Jury jury) payable returns (bytes32 aggId)
+function drawJury(bytes32 aggId)        // from block B+2; with beacons, call it again once the beacon values are in
+function closeCommits(bytes32 aggId)    // after T+ with at least M commits, if no later commit closed the phase
+function promote(bytes32 aggId)         // from block C+2 after the close: draws the M arbiters that reveal
+function settle(bytes32 aggId)          // after the round's deadline; new requests also settle due rounds
+function cancelUnsealed(bytes32 aggId)  // a round that can no longer be drawn: prepay to the treasury
+function getEvaluation(bytes32 aggId) view returns (uint256[] scores, string justifications, bool valid)
+function getRoundInfo(bytes32 aggId) view returns (uint8 phase, ...)   // 1 draw ... 7 settled, 8 failed, 9 cancelled
+function getJury(bytes32 aggId) view returns (uint8 K, uint8 M, uint8 N, uint8 P, uint40 timeout)
+function withdrawEth()                  // fees, rewards and refunds are credited to ethOwed
 
-// Reputation management
-function updateArbiterReputation(address arbiter, int256 delta) external
-function getArbiterScore(address arbiter) external view returns (uint256)
-
-// Staking and rewards
-function stakeTokens(uint256 amount) external
-function claimRewards() external
-function slash(address arbiter, uint256 amount) external
+// ReputationKeeper: an arbiter
+function registerArbiter(address oracle, bytes32 jobId, uint64 fee, uint64[] classes, bytes32 chainHead)
+function answerHealthCall(bytes32 key, bytes32 preimage)
+function rotateChain(bytes32 key, bytes32 preimage, bytes32 newHead)
+function healthState(bytes32 key) view returns (bool pending, uint256 sentAt, bytes32 head)
+function setPaused(bytes32 key, bool paused)
+function requestExit(bytes32 key)       // stops selection at once
+function completeExit(bytes32 key)      // after the unbonding period (2 days by default, never less): stake returned
+function getArbiter(bytes32 key) view returns (ArbiterView)
 ```
+
+A request is checked per request and reverts with `BadJury` unless K >= M >= N >= P >= 1, N <= 40,
+P >= 2 unless N = 1, K <= `maxJury()` (default 50) and the keeper's `shortlistSize()` (60), and
+`tPlus()` (155 s) < timeout <= `maxTimeout()` (3,600 s).
 
 ### 2. Arbiter Oracle Network
 
@@ -118,41 +144,25 @@ graph LR
     A1 --> B3
 ```
 
-#### Job Specification
+#### Job Specifications
 
-```toml
-type = "directrequest"
-schemaVersion = 1
-name = "verdikta-arbitration"
-contractAddress = "0x..." # Dispatcher contract
-minIncomingConfirmations = 1
+Each arbiter runs two Chainlink jobs (templates in the arbiter repository: `chainlink-node/basicJobSpec` and
+`chainlink-node/healthJobSpec`).
 
-observationSource = """
-    decode_log   [type="ethabidecodelog"
-                  abi="OracleRequest(bytes32 indexed specId, address requester, bytes32 requestId, uint256 payment, address callbackAddr, bytes4 callbackFunctionId, uint256 cancelExpiration, uint256 dataVersion, bytes data)"
-                  data="$(jobRun.logData)"
-                  topics="$(jobRun.logTopics)"]
-
-    decode_cbor  [type="cborparse" data="$(decode_log.data)"]
-
-    fetch_ipfs   [type="bridge" name="verdikta-adapter" 
-                  requestData="{\\"id\\": $(jobSpec.externalJobID), \\"data\\": { \\"ipfsHash\\": $(decode_cbor.ipfsHash), \\"disputeId\\": $(decode_cbor.disputeId) }}"]
-
-    parse        [type="jsonparse" path="data,decision"]
-
-    encode_data  [type="ethabiencode"
-                  abi="(uint256 disputeId, uint8 decision, string justification)"
-                  data="{ \\"disputeId\\": $(decode_cbor.disputeId), \\"decision\\": $(parse), \\"justification\\": $(fetch_ipfs.justification) }"]
-
-    encode_tx    [type="ethabiencode"
-                  abi="fulfillOracleRequest(bytes32 requestId, bytes32 data)"
-                  data="{\\"requestId\\": $(decode_log.requestId), \\"data\\": $(encode_data)}"]
-
-    submit_tx    [type="ethtx" to="$(decode_log.callbackAddr)" data="$(encode_tx)"]
-
-    decode_log -> decode_cbor -> fetch_ipfs -> parse -> encode_data -> encode_tx -> submit_tx
-"""
-```
+- **The request job** (`directrequest`) answers the aggregator's operator requests. The request's `cid`
+  field says which phase it is:
+    - **Commit**, `1:<cids>[:addendum]`: the node evaluates the query and answers with one word, its commit
+      `keccak256(abi.encode(aggId, operator, response, salt))` in full, where `aggId` is the request's
+      `aggId` as `bytes32`, `operator` the operator contract that fulfills, `response` the `uint256[]` it will
+      reveal, and `salt` 16 random bytes, fresh for every commit.
+    - **Reveal**, `2:<64 lowercase hex>`: the full commit hash. The node answers with the stored `response`
+      and the CID `<justification CID>:<32 hex salt>`.
+  The callback is `fulfill(bytes32, uint256[], string)` on the aggregator. The finalizing reveal pays for
+  the clustering, so the job's gas limit is 9M.
+- **The health job** (`cron`, every 10 s) reads `healthState(key)` from the keeper. While a health call is
+  pending it asks the external adapter for the next value of the arbiter's hash chain and sends
+  `rotateChain(key, preimage, newHead)` (with `newHead == preimage` that is `answerHealthCall`). An arbiter
+  that leaves a call unanswered for `callDeadline` (60 s) is frozen, and not selected, until it answers.
 
 ### 3. AI Processing Engine
 
@@ -261,12 +271,12 @@ function calculateFinalDecision(
 
 1. **Initiation**
    ```
-   Client → Smart Contract → Event Emission
+   Client → requestAIEvaluationWithApproval (block B: escrow, jury, query) → RequestAIEvaluation
    ```
 
-2. **Oracle Activation**
+2. **Jury Draw**
    ```
-   Chainlink Node → Job Spec → External Adapter
+   Anyone → drawJury (from B+2; seed from blockhash(B+1)) → Keeper selection as of B → commit requests
    ```
 
 3. **Evidence Retrieval**
@@ -274,73 +284,88 @@ function calculateFinalDecision(
    External Adapter → IPFS → Evidence Package
    ```
 
-4. **AI Processing**
+4. **AI Processing and Commit**
    ```
-   AI Node → Multiple Models → Consensus Decision
-   ```
-
-5. **Result Submission**
-   ```
-   External Adapter → Chainlink Node → Smart Contract
+   AI Node → Multiple Models → Answer → commit hash → fulfill
    ```
 
-6. **Resolution Execution**
+5. **Promotion and Reveal**
    ```
-   Smart Contract → Automatic Execution → State Update
+   M+ commits (or T+ with M) → close at block C → promote (from C+2) → M reveal requests → N-th reveal finalizes
    ```
+
+6. **Resolution Execution and Settlement**
+   ```
+   FulfillAIEvaluation → client reads getEvaluation → after the deadline, settle → keeper scores
+   ```
+
+#### Round Lifecycle (v2)
+
+`getRoundInfo(aggId)` returns the round's phase:
+
+| Phase | Name | What moves it on |
+|---|---|---|
+| 1 | draw | `drawJury` from block B+2. The requester earns the draw reward (2 × the fee ceiling) if it draws within 30 s; after that, whoever draws earns it |
+| 2 | beacons | Only with `withBeacons`: the first `drawJury` picks 4 beacon arbiters, and a second `drawJury` draws the jury once 2 beacon values are in (within 120 s) |
+| 3 | commit | The phase closes at the M+-th commit (M+ = M + ceil((K − M) / 2)), or with `closeCommits` once T+ (155 s) has passed since the draw with at least M commits |
+| 4 | closing | `promote` from block C+2 draws M of all commits uniformly at random and sends them reveal requests. Its caller earns 1 × the fee ceiling |
+| 5 | reveal | The N-th counted reveal finalizes. Promoted arbiters always get at least 120 s after `promote` |
+| 6 | final | The result is readable (`getEvaluation`). Late reveals are still accepted and scored until the deadline. `settle` after the deadline |
+| 7 | settled | Done |
+| 8 | failed | No result; settled |
+| 9 | cancelled | `cancelUnsealed`: the seed was never sealed within the block-hash history, or the round was not drawn within a day. The prepay goes to the treasury |
+
+The round's `timeout` runs from the draw, not from the request. A round never times out before it is drawn,
+but `drawJury` reverts with `DrawExpired` more than a day after the request.
+
+#### Fees
+
+- The requester escrows `maxTotalFee(maxFee, minFee, withBeacons, K, P)` in ETH (from `msg.value`, topped up
+  from its `ethOwed` credit): `max(eff, minFee) × (K + B × P [+ 2 beacons]) + eff × (2 + 1)`, where
+  `eff = min(maxFee, maxOracleFee())` is the fee ceiling, `minFee` the requester's fee floor (0 = none) and
+  B the bonus multiplier (3).
+- Each drawn juror's operator owner is credited its fee at the draw: `max(posted fee, minFee)`. Each arbiter in
+  the cluster is credited B times that as a bonus. Eligibility uses the ceiling only, so the floor may exceed it.
+- What is not spent returns to the requester's credit at finalization, or at settlement for a failed round.
+  Where a refund would be a free re-roll, it goes to the treasury instead: a missed beacon quorum, a commit phase
+  that had M commits but was never promoted, and a cancelled round.
+- Everyone withdraws with `withdrawEth()`.
 
 ## Security Architecture
 
-### Access Control
+### Commitments Bound to the Round
 
 ```solidity
-// Role-based access control
-contract AccessControl {
-    bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
-    bytes32 public constant ARBITER_ROLE = keccak256("ARBITER_ROLE");
-    bytes32 public constant ORACLE_ROLE = keccak256("ORACLE_ROLE");
-    
-    modifier onlyRole(bytes32 role) {
-        require(hasRole(role, msg.sender), "AccessControl: unauthorized");
-        _;
-    }
-    
-    function grantRole(bytes32 role, address account) external onlyRole(ADMIN_ROLE);
-    function revokeRole(bytes32 role, address account) external onlyRole(ADMIN_ROLE);
-}
+// the arbiter's commit, sent in full as the commit word
+bytes32 commit = keccak256(abi.encode(aggId, operator, response, salt));   // salt: 128 bits, fresh per commit
+
+// the reveal carries response and "<justification CID>:<32 hex salt>"; the aggregator recomputes the hash
+// with msg.sender as the operator, and ignores a reveal that does not match
 ```
 
-### Multi-Signature Validation
+Including `aggId` makes a hash collision useful for one round only, and the full 32 bytes put one out of
+reach. A malformed reveal still uses up the request, so there is no retry.
 
-```solidity
-struct Decision {
-    uint8 outcome;
-    string justification;
-    bytes[] signatures;
-    address[] signers;
-}
+### Unpredictable Juries
 
-function validateDecision(Decision memory decision) internal view returns (bool) {
-    require(decision.signatures.length >= MIN_SIGNATURES, "Insufficient signatures");
-    
-    bytes32 hash = keccak256(abi.encodePacked(decision.outcome, decision.justification));
-    
-    for (uint i = 0; i < decision.signatures.length; i++) {
-        address recovered = recoverSigner(hash, decision.signatures[i]);
-        require(hasRole(ARBITER_ROLE, recovered), "Invalid signer");
-        require(recovered == decision.signers[i], "Signature mismatch");
-    }
-    
-    return true;
-}
-```
+- The jury is drawn from the keeper's state as of the request block B, seeded by `blockhash(B+1)`, so nobody
+  can predict it when the request is signed, and who draws or when changes nothing.
+- With beacons, the seed also mixes the first 2 beacon values, each fixed by the end of block B+1.
+- The arbiters that reveal are drawn from all commits with `blockhash(C+1)`, so the arbiter that closes the
+  commit phase cannot predict them, and committing first earns nothing.
+- Cluster ties go by a seeded order of the slots, not by reveal order.
 
 ### Economic Security
 
-- **Staking Requirements**: Arbiters must stake tokens to participate
-- **Slashing Conditions**: Malicious behavior results in stake reduction
-- **Reputation System**: Poor decisions reduce future assignment probability
-- **Insurance Pool**: Community fund covers edge cases and appeals
+- **Staking Requirements**: Each arbiter stakes `stakeRequirement()` wVDKA (100 by default) at
+  `registerArbiter`; it is returned by `completeExit`, at least 2 days after `requestExit`
+- **Reputation System**: Quality (+20 close to the median, −50 off, −200 far) and timeliness (+20 per delivered
+  reveal, −200 for a promoted arbiter that did not reveal, −500 if that round failed, −400 for a
+  non-committer in a round that failed for lack of commits). Scores run 0 to 1,000 and start at 500
+- **Blocks and Bans**: A score that reaches 0 blocks the arbiter for 24 hours × 2^offenses and restarts it at
+  500. The third offense is a permanent ban. One offense is forgiven per 90 clean days
+- **Burns**: The keeper can burn stake on a block and on a ban; both are off by default
+- **Liveness**: Unanswered health calls freeze an arbiter; a frozen arbiter is not selected
 
 ## Scalability Solutions
 

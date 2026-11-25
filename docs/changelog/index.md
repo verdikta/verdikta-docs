@@ -4,6 +4,23 @@ This page tracks all notable changes to the Verdikta ecosystem, including update
 
 ## Latest Updates
 
+### 🧪 November 2026: Protocol v2 (in development, not deployed)
+
+Work in progress on the `beacon` branch of the dispatcher, arbiter, common and applications repositories. v2 is a
+breaking redeploy: a new keeper, aggregator and `JuryBeacons` contract, and every arbiter registers again. Its
+addresses will be published at the v2 deployment. See [Release Notes](releases.md#unreleased-protocol-v2).
+
+- **New**: One aggregator for every jury size: each request carries its jury (K, M, N, P, timeout)
+- **New**: Two-phase request: the jury is drawn with `drawJury` from two blocks after the request, from a block hash
+- **New**: Optional jury beacons per request, mixing arbiters' hash-chain values into the seed
+- **New**: Hash-chain health calls; unanswered calls freeze an arbiter
+- **New**: Requester-set fee floor (`minFee`)
+- **New**: One-number answers: a one-outcome question is answered with a single score
+- **Changed**: Commit format `keccak256(abi.encode(aggId, operator, response, salt))` with a 128-bit salt
+- **Changed**: Registration with stake and a chain head (`registerArbiter`); exits take an unbonding period
+  (`requestExit`, then `completeExit` 2 days later)
+- **Changed**: Two reputation scores with blocks, bans and decay; settlement after the round's deadline (`settle`)
+
 ### 🚀 January 2025: Documentation Site Launch
 
 - **New**: Unified documentation site at docs.verdikta.org

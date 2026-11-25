@@ -36,7 +36,7 @@
 ### Wallet Setup
 - Private key with sufficient funds
 - Base Sepolia ETH for gas fees
-- LINK tokens for oracle operations
+- wVDKA for the registration stake (100 per job by default); no LINK is needed, fees are paid in ETH
 
 ## Network Configuration
 

@@ -2,6 +2,40 @@
 
 Detailed release notes for all Verdikta ecosystem components.
 
+## Unreleased: Protocol v2
+
+*In development on the `beacon` branches. Not audited and not deployed yet: the v2 addresses will be published at
+the v2 deployment, and every address in use today is v1.* v2 is a redeploy, not an upgrade. The dispatcher
+repository's `reputationBasedAggregator/MIGRATION.md` lists what each consumer must change.
+
+### For requesters and integrating contracts
+
+- `requestAIEvaluationWithApproval(cids, addendumText, alpha, maxFee, minFee, estimatedBaseCost,
+  maxFeeBasedScalingFactor, requestedClass, withBeacons, jury)`, with `jury = (K, M, N, P, timeout)`. The request
+  reverts with `BadJury` unless K >= M >= N >= P >= 1, N <= 40, P >= 2 unless N = 1, K <= `maxJury()` (50) and the
+  keeper's `shortlistSize()` (60), and `tPlus()` (155 s) < timeout <= `maxTimeout()` (3,600 s).
+- The escrow is `maxTotalFee(maxFee, minFee, withBeacons, K, P)` in ETH. The aggregator has no `K()`, `M()`, `N()`,
+  `P()` or `responseTimeoutSeconds()`; `getJury(aggId)` returns a round's jury.
+- The round moves on through permissionless calls: `drawJury` (from block B+2; twice with beacons), `closeCommits`
+  (after T+ if needed), `promote` (from block C+2), and `settle` after the deadline, which replaces
+  `finalizeEvaluationTimeout`. `getRoundInfo(aggId)` replaces `getAggregationStatus`.
+- A fee floor `minFee`: every juror, and every used beacon, is paid at least the floor.
+- A thin pool repeats arbiters to fill the jury; the draw fails only when no arbiter is eligible.
+
+### For arbiter operators
+
+- Registration: `registerArbiter(oracle, jobId, fee, classes, chainHead)` pulls the stake (`stakeRequirement()`, 100 wVDKA by default) and
+  replaces `registerOracle`. `requestExit` and `completeExit` (after 2 days) replace `deregisterOracle`;
+  `setPaused` replaces `setOracleActive`. Each operator owner calls `addReputationKeeper(<v2 keeper>)`.
+- Commit `keccak256(abi.encode(aggId, operator, response, salt))`, all 32 bytes, with a fresh 16-byte salt; the
+  reveal CID is `<cid>:<32 hex>` and the reveal request is `2:<64 hex>`. A commit in the v1 format is accepted but
+  can never be revealed.
+- A health job answers the keeper's `HealthCall` with the next value of the arbiter's hash chain, within 60 s.
+- The request job's gas limit is 9M: the N-th counted reveal pays for the clustering.
+- One-number answers: a one-outcome question is answered `[score]`, from 0 to 1,000,000, not scaled.
+
+---
+
 ## v0.3.0 - Documentation Site Launch
 *Released: January 15, 2025*
 

@@ -97,4 +97,13 @@ Choose your path based on your role:
 ---
 
 !!! info "Beta Notice"
-    Verdikta is currently in beta testing on Base Sepolia testnet. Features and APIs may change before mainnet launch. 
+    Verdikta is currently in beta testing on Base Sepolia testnet. Features and APIs may change before mainnet launch.
+
+!!! note "Protocol v2 (in development, not deployed yet)"
+    Verdikta v2 is a breaking redeploy of the dispatcher contracts: one aggregator serves every jury size, the
+    requester sets the jury (K drawn, M promoted, N counted, P clustered, and a timeout) with each request, the jury
+    is drawn after the request from a block hash (optionally mixed with jury beacons), commits are bound to the
+    round, arbiters answer hash-chain health calls, and a requester may set a fee floor. Every arbiter registers
+    again with a stake. The v2 addresses will be published at the v2 deployment; the addresses in use today are v1.
+    See the [overview](overview/index.md), the [architecture](overview/architecture.md) and the
+    [changelog](changelog/index.md).
