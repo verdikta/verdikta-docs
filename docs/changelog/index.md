@@ -20,6 +20,8 @@ addresses will be published at the v2 deployment. See [Release Notes](releases.m
 - **Changed**: Registration with stake and a chain head (`registerArbiter`); exits take an unbonding period
   (`requestExit`, then `completeExit` 2 days later)
 - **Changed**: Two reputation scores with blocks, bans and decay; settlement after the round's deadline (`settle`)
+- **Changed**: No treasury: a never-promoted round pays its committers, and other forfeits fund an arbiter pool
+  that pays a random registered arbiter at each jury draw
 
 ### 🚀 January 2025: Documentation Site Launch
 

@@ -96,7 +96,7 @@ function drawJury(bytes32 aggId)        // from block B+2; with beacons, call it
 function closeCommits(bytes32 aggId)    // after T+ with at least M commits, if no later commit closed the phase
 function promote(bytes32 aggId)         // from block C+2 after the close: draws the M arbiters that reveal
 function settle(bytes32 aggId)          // after the round's deadline; new requests also settle due rounds
-function cancelUnsealed(bytes32 aggId)  // a round that can no longer be drawn: prepay to the treasury
+function cancelUnsealed(bytes32 aggId)  // a round that can no longer be drawn: prepay to the arbiter pool
 function getEvaluation(bytes32 aggId) view returns (uint256[] scores, string justifications, bool valid)
 function getRoundInfo(bytes32 aggId) view returns (uint8 phase, ...)   // 1 draw ... 7 settled, 8 failed, 9 cancelled
 function getJury(bytes32 aggId) view returns (uint8 K, uint8 M, uint8 N, uint8 P, uint40 timeout)
@@ -314,7 +314,7 @@ function calculateFinalDecision(
 | 6 | final | The result is readable (`getEvaluation`). Late reveals are still accepted and scored until the deadline. `settle` after the deadline |
 | 7 | settled | Done |
 | 8 | failed | No result; settled |
-| 9 | cancelled | `cancelUnsealed`: the seed was never sealed within the block-hash history, or the round was not drawn within a day. The prepay goes to the treasury |
+| 9 | cancelled | `cancelUnsealed`: the seed was never sealed within the block-hash history, or the round was not drawn within a day. The prepay goes to the arbiter pool |
 
 The round's `timeout` runs from the draw, not from the request. A round never times out before it is drawn,
 but `drawJury` reverts with `DrawExpired` more than a day after the request.
@@ -328,8 +328,21 @@ but `drawJury` reverts with `DrawExpired` more than a day after the request.
 - Each drawn juror's operator owner is credited its fee at the draw: `max(posted fee, minFee)`. Each arbiter in
   the cluster is credited B times that as a bonus. Eligibility uses the ceiling only, so the floor may exceed it.
 - What is not spent returns to the requester's credit at finalization, or at settlement for a failed round.
-  Where a refund would be a free re-roll, it goes to the treasury instead: a missed beacon quorum, a commit phase
-  that had M commits but was never promoted, and a cancelled round.
+  Where a refund would be a free re-roll, the requester gets nothing back:
+  - a round with at least M commits that was never promoted shares its unspent prepay equally among the slots
+    that committed (`CommitPayment`, one per slot, counted in the round's rewards); only the indivisible
+    remainder goes to the arbiter pool;
+  - a missed beacon quorum (after paying the beacons that answered), a draw that failed after a beacon stage
+    when the keeper's walk depends on the seed (`scansAll(class)` is false), and a cancelled round (the whole
+    prepay) go to the arbiter pool.
+- The arbiter pool is the ledger entry `ethOwed(address(0))`, which nobody can withdraw. A credit to it is
+  announced as `RequesterRefunded(aggId, address(0), amount)`, or `RoundCancelled` for a cancel. Each
+  `drawJury` that draws a jury pays an eighth of the pool to one registered arbiter's payee, picked uniformly
+  by the keeper's `poolPayee(seed)` from that draw's seed (`PoolPayment`). The pick skips arbiters that are
+  paused, banned, exiting or understaked and makes at most two tries; if both miss, the pool waits for the
+  next draw. The seed is fixed by a block hash after the request, so a forfeiting round never picks its own
+  winner, and paying an eighth per draw makes grinding with many requests cost more than it wins. There is no
+  treasury in v2.
 - Everyone withdraws with `withdrawEth()`.
 
 ## Security Architecture

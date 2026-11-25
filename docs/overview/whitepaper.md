@@ -108,13 +108,13 @@ Fees are set per request, not by dispute value:
 - Each arbiter posts its own fee. The requester sets a fee ceiling, which decides which arbiters are eligible, and may set a fee floor: every juror is then paid at least the floor.
 - Every drawn juror is paid its fee; each arbiter in the consensus cluster earns a bonus of 3 times its fee.
 - Whoever draws the jury, and whoever promotes the reveals, earns a small reward, so no outside service is needed to move a round on.
-- The requester escrows the most a round can cost, and unspent fees are returned, except where a refund would let a requester re-roll a jury it did not like.
+- The requester escrows the most a round can cost, and unspent fees are returned, except where a refund would let a requester re-roll a jury it did not like. Then, if the round had enough commits but was never promoted, the arbiters that committed share what is left; otherwise it goes to the arbiter pool, which pays an eighth of its balance to one randomly picked registered arbiter at each jury draw. There is no protocol treasury taking a cut.
 
 The cost of a decision therefore follows the jury the application asks for: a small jury for small stakes, a large one for high-value decisions.
 
 ### Incentive Alignment
 
-- **Arbiters**: Earn fees for every round they are drawn for and a bonus for answers in the consensus; lose reputation, and selection, for poor ones
+- **Arbiters**: Earn fees for every round they are drawn for and a bonus for answers in the consensus, a share of a round's unspent prepay when they committed and nobody promoted it, and random payouts from the arbiter pool while registered and in good standing; lose reputation, and selection, for poor ones
 - **Users**: Pay lower fees than traditional systems
 - **Developers**: Earn revenue sharing for building applications
 - **Token Holders**: Benefit from network growth and fee collection

@@ -22,6 +22,13 @@ repository's `reputationBasedAggregator/MIGRATION.md` lists what each consumer m
   `finalizeEvaluationTimeout`. `getRoundInfo(aggId)` replaces `getAggregationStatus`.
 - A fee floor `minFee`: every juror, and every used beacon, is paid at least the floor.
 - A thin pool repeats arbiters to fill the jury; the draw fails only when no arbiter is eligible.
+- No treasury: the aggregator has no `treasury()`, and `setContracts(keeper, beacons)` takes two arguments
+  (the deploy no longer reads `TREASURY_ADDRESS`). A round with M commits that was never promoted shares its
+  unspent prepay among the slots that committed (`CommitPayment`). The other forfeits (a cancelled undrawn round,
+  a missed beacon quorum, a seed-dependent draw failure after a beacon stage, and the indivisible remainder of a
+  committer share) credit the arbiter pool, `ethOwed(address(0))`, announced as
+  `RequesterRefunded(aggId, address(0), amount)` or `RoundCancelled`. Nobody can withdraw the pool
+  (`withdrawEthFor(address(0))` reverts `NotAuthorized`).
 
 ### For arbiter operators
 
@@ -34,6 +41,10 @@ repository's `reputationBasedAggregator/MIGRATION.md` lists what each consumer m
 - A health job answers the keeper's `HealthCall` with the next value of the arbiter's hash chain, within 60 s.
 - The request job's gas limit is 9M: the N-th counted reveal pays for the clustering.
 - One-number answers: a one-outcome question is answered `[score]`, from 0 to 1,000,000, not scaled.
+- New earnings: a share of a never-promoted round's unspent prepay for each slot that committed
+  (`CommitPayment`), and the arbiter pool: each jury draw pays an eighth of it to one registered arbiter picked
+  from the draw's seed by the keeper's `poolPayee` (`PoolPayment`), skipping paused, banned, exiting and
+  understaked arbiters. Both are credited to the operator owner's `ethOwed` and withdrawn with `withdrawEth()`.
 
 ---
 
